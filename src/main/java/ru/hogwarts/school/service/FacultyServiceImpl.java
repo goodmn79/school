@@ -27,7 +27,10 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public Faculty changeFaculty(Faculty faculty) {
-        if (storage.containsKey(faculty.getId())) return storage.put(faculty.getId(), faculty);
+        if (storage.containsKey(faculty.getId())) {
+            storage.put(faculty.getId(), faculty);
+            return faculty;
+        }
         return null;
     }
 

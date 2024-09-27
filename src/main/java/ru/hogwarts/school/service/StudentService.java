@@ -15,4 +15,6 @@ public interface StudentService {
     Student deleteStudentById(long id);
 
     Collection<Student> getAllStudents();
+
+    Collection<Student> getAllStudentsWithAge(int age);
 }

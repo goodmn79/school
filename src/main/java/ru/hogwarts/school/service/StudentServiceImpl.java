@@ -26,7 +26,10 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student changeStudentData(Student student) {
-        if (storage.containsKey(student.getId())) return storage.put(student.getId(), student);
+        if (storage.containsKey(student.getId())) {
+            storage.put(student.getId(), student);
+            return student;
+        }
         return null;
     }
 
@@ -43,6 +46,7 @@ public class StudentServiceImpl implements StudentService {
         return storage.values();
     }
 
+    @Override
     public Collection<Student> getAllStudentsWithAge(int age) {
         return this.getAllStudents()
                 .stream()
