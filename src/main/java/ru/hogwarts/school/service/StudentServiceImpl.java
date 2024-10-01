@@ -2,55 +2,50 @@ package ru.hogwarts.school.service;
 
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.mogel.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
-    private final Map<Long, Student> storage = new HashMap<>();
-    private long idGenerator;
+    private final StudentRepository repository;
+
+    public StudentServiceImpl(StudentRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public Student addStudent(Student student) {
-        student.setId(++idGenerator);
-        storage.put(idGenerator, student);
-        return student;
-    }
-
-    @Override
-    public Student getStudentById(long id) {
-        return storage.getOrDefault(id, null);
-    }
-
-    @Override
-    public Student changeStudentData(Student student) {
-        if (storage.containsKey(student.getId())) {
-            storage.put(student.getId(), student);
-            return student;
-        }
-        return null;
-    }
-
-    @Override
-    public Student deleteStudentById(long id) {
-        if (storage.containsKey(id)) {
-            return storage.remove(id);
-        }
-        return null;
+        return repository.save(student);
     }
 
     @Override
     public Collection<Student> getAllStudents() {
-        return storage.values();
+        return repository.findAll();
     }
 
     @Override
     public Collection<Student> getAllStudentsWithAge(int age) {
-        return this.getAllStudents()
-                .stream()
-                .filter(s -> s.getAge() == age)
-                .toList();
+        return repository.findAllByAge(age);
     }
+
+    @Override
+    public Optional<Student> getStudentById(long id) {
+        return repository.findById(id);
+    }
+
+    @Override
+    public Student changeStudentData(Student student) {
+        return repository.save(student);
+    }
+
+    @Override
+    public Optional<Student> deleteStudentById(long id) {
+        Optional<Student> deletedStudent = repository.findById(id);
+        deletedStudent.ifPresent(repository::delete);
+        return deletedStudent;
+    }
+
+
 }

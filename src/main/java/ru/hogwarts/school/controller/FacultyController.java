@@ -6,6 +6,7 @@ import ru.hogwarts.school.mogel.Faculty;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/faculties")
@@ -16,8 +17,13 @@ public class FacultyController {
         this.service = service;
     }
 
+    @PostMapping
+    public ResponseEntity<Faculty> createFaculty(@RequestBody Faculty faculty) {
+        return ResponseEntity.ok(service.addFaculty(faculty));
+    }
+
     @GetMapping
-    public ResponseEntity<Collection<Faculty>> getAllFaculties(@RequestParam(value = "color", required = false) String color) {
+    public ResponseEntity<Collection<Faculty>> getAllFaculties(@RequestParam(required = false) String color) {
         Collection<Faculty> faculties;
         if (color == null) {
             faculties = service.getAllFaculties();
@@ -30,27 +36,18 @@ public class FacultyController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Faculty> getFacultyById(@PathVariable long id) {
-        Faculty faculty = service.getFacultyById(id);
-        if (faculty == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(faculty);
-    }
-
-    @PostMapping
-    public ResponseEntity<Faculty> createFaculty(@RequestBody Faculty faculty) {
-        return ResponseEntity.ok(service.createFaculty(faculty));
+        Optional<Faculty> foundFaculty = service.getFacultyById(id);
+        return foundFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping
     public ResponseEntity<Faculty> changeFaculty(@RequestBody Faculty faculty) {
-        Faculty foundFaculty = service.changeFaculty(faculty);
-        if (foundFaculty == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(foundFaculty);
+        return ResponseEntity.ok(service.changeFaculty(faculty));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Faculty> deleteFaculty(@PathVariable long id) {
-        Faculty deletedFaculty = service.deleteFacultyById(id);
-        if (deletedFaculty == null) return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok(deletedFaculty);
+        Optional<Faculty> deletedFaculty = service.deleteFacultyById(id);
+        return deletedFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

@@ -6,6 +6,7 @@ import ru.hogwarts.school.mogel.Student;
 import ru.hogwarts.school.service.StudentServiceImpl;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/students")
@@ -16,8 +17,13 @@ public class StudentController {
         this.service = service;
     }
 
+    @PostMapping
+    public ResponseEntity<Student> addStudent(@RequestBody Student student) {
+        return ResponseEntity.ok(service.addStudent(student));
+    }
+
     @GetMapping
-    public ResponseEntity<Collection<Student>> getAllStudents(@RequestParam(value = "age", required = false) Integer age) {
+    public ResponseEntity<Collection<Student>> getAllStudents(@RequestParam(required = false) Integer age) {
         Collection<Student> students;
         if (age == null) {
             students = service.getAllStudents();
@@ -30,27 +36,18 @@ public class StudentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Student> getStudentById(@PathVariable long id) {
-        Student student = service.getStudentById(id);
-        if (student == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(student);
-    }
-
-    @PostMapping
-    public ResponseEntity<Student> addStudent(@RequestBody Student student) {
-        return ResponseEntity.ok(service.addStudent(student));
+        Optional<Student> foundStudent = service.getStudentById(id);
+        return foundStudent.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping
     public ResponseEntity<Student> changeStudentData(@RequestBody Student student) {
-        Student foundStudent = service.changeStudentData(student);
-        if (foundStudent == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(foundStudent);
+        return ResponseEntity.ok(service.changeStudentData(student));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Student> deleteStudent(@PathVariable long id) {
-        Student deletedStudent = service.deleteStudentById(id);
-        if (deletedStudent == null) return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok(deletedStudent);
+        Optional<Student> deletedStudent = service.deleteStudentById(id);
+        return deletedStudent.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
