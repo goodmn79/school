@@ -1,22 +1,22 @@
 package ru.hogwarts.school.service;
 
-import ru.hogwarts.school.mogel.Student;
+import ru.hogwarts.school.dto.StudentDTO;
 
 import java.util.Collection;
 import java.util.Optional;
 
 public interface StudentService {
 
-    Student addStudent(Student student);
+    StudentDTO addStudent(StudentDTO studentDTO);
 
-    Collection<Student> getAllStudents();
+    Collection<StudentDTO> getAllStudents();
 
-    Collection<Student> getAllStudentsWithAge(int age);
+    Collection<StudentDTO> findStudentsByAge(int age);
 
-    Optional<Student> getStudentById(long id);
+    Optional<StudentDTO> getStudentById(long id);
 
-    Student changeStudentData(Student student);
+    StudentDTO changeStudentData(StudentDTO studentDTO);
 
-    Optional<Student> deleteStudentById(long id);
+    StudentDTO deleteStudentById(long id);
 
 }

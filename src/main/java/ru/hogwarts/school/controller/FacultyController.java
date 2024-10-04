@@ -2,7 +2,7 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.hogwarts.school.mogel.Faculty;
+import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.Collection;
@@ -18,13 +18,13 @@ public class FacultyController {
     }
 
     @PostMapping
-    public ResponseEntity<Faculty> createFaculty(@RequestBody Faculty faculty) {
+    public ResponseEntity<FacultyDTO> createFaculty(@RequestBody FacultyDTO faculty) {
         return ResponseEntity.ok(service.addFaculty(faculty));
     }
 
     @GetMapping
-    public ResponseEntity<Collection<Faculty>> getAllFaculties(@RequestParam(required = false) String color) {
-        Collection<Faculty> faculties;
+    public ResponseEntity<Collection<FacultyDTO>> getAllFaculties(@RequestParam(required = false) String color) {
+        Collection<FacultyDTO> faculties;
         if (color == null) {
             faculties = service.getAllFaculties();
         } else {
@@ -35,19 +35,20 @@ public class FacultyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Faculty> getFacultyById(@PathVariable long id) {
-        Optional<Faculty> foundFaculty = service.getFacultyById(id);
+    public ResponseEntity<FacultyDTO> getFacultyById(@PathVariable long id) {
+        Optional<FacultyDTO> foundFaculty = service.getFacultyById(id);
         return foundFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping
-    public ResponseEntity<Faculty> changeFaculty(@RequestBody Faculty faculty) {
-        return ResponseEntity.ok(service.changeFaculty(faculty));
+    public ResponseEntity<FacultyDTO> changeFaculty(@RequestBody FacultyDTO facultyDTO) {
+        FacultyDTO changedFaculty = service.changeFaculty(facultyDTO);
+        return changedFaculty == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(changedFaculty);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Faculty> deleteFaculty(@PathVariable long id) {
-        Optional<Faculty> deletedFaculty = service.deleteFacultyById(id);
-        return deletedFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<FacultyDTO> deleteFaculty(@PathVariable long id) {
+        FacultyDTO deletedFaculty = service.deleteFacultyById(id);
+        return deletedFaculty == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(deletedFaculty);
     }
 }

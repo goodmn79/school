@@ -1,23 +1,23 @@
 package ru.hogwarts.school.service;
 
-import ru.hogwarts.school.mogel.Faculty;
+import ru.hogwarts.school.dto.FacultyDTO;
 
 import java.util.Collection;
 import java.util.Optional;
 
 public interface FacultyService {
 
-    Faculty addFaculty(Faculty faculty);
+    FacultyDTO addFaculty(FacultyDTO facultyDTO);
 
-    Collection<Faculty> getAllFaculties();
+    Collection<FacultyDTO> getAllFaculties();
 
-    Collection<Faculty> getAllFacultiesWithColor(String color);
+    Collection<FacultyDTO> getAllFacultiesWithColor(String color);
 
-    Optional<Faculty> getFacultyById(long id);
+    Optional<FacultyDTO> getFacultyById(long id);
 
-    Faculty changeFaculty(Faculty faculty);
+    FacultyDTO changeFaculty(FacultyDTO facultyDTO);
 
-    Optional<Faculty> deleteFacultyById(long id);
+    FacultyDTO deleteFacultyById(long id);
 
 
 }
