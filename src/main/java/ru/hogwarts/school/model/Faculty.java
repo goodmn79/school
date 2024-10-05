@@ -1,18 +1,13 @@
 package ru.hogwarts.school.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import ru.hogwarts.school.dto.FacultyDTO;
+
+import java.util.Collection;
 
 @Entity
+@Table(name = "faculty")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Faculty {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,7 +15,7 @@ public class Faculty {
     private String name;
     private String color;
 
-    public static FacultyDTO convertToFacultyDTO(Faculty faculty) {
-        return new FacultyDTO(faculty.getId(), faculty.getName(), faculty.getColor());
-    }
+    @OneToMany(mappedBy = "faculty")
+    private Collection<Student> students;
+
 }

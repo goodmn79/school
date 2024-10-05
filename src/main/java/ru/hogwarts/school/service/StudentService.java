@@ -1,5 +1,6 @@
 package ru.hogwarts.school.service;
 
+import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
 
 import java.util.Collection;
@@ -11,9 +12,11 @@ public interface StudentService {
 
     Collection<StudentDTO> getAllStudents();
 
-    Collection<StudentDTO> findStudentsByAge(int age);
+    Collection<StudentDTO> findByAgeBetween(int from, int to);
 
     Optional<StudentDTO> getStudentById(long id);
+
+    FacultyDTO getStudentFaculty(long id);
 
     StudentDTO changeStudentData(StudentDTO studentDTO);
 

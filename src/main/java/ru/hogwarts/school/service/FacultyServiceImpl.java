@@ -2,14 +2,19 @@ package ru.hogwarts.school.service;
 
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.dto.FacultyDTO;
-import ru.hogwarts.school.mapper.SchoolMapper;
+import ru.hogwarts.school.dto.StudentDTO;
+import ru.hogwarts.school.mapper.FacultyMapper;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static ru.hogwarts.school.mapper.SchoolMapper.toFacultyDTO;
+import static ru.hogwarts.school.mapper.FacultyMapper.*;
+import static ru.hogwarts.school.mapper.StudentMapper.toCollectionStudentDTOs;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {
@@ -21,31 +26,39 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public FacultyDTO addFaculty(FacultyDTO facultyDTO) {
-        Faculty faculty = new Faculty(facultyDTO.getId(), facultyDTO.getName(), facultyDTO.getColor());
+        Faculty faculty = toFaculty(facultyDTO);
         repository.save(faculty);
         return facultyDTO;
     }
 
     @Override
     public Collection<FacultyDTO> getAllFaculties() {
-        return repository.findAll()
-                .stream()
-                .map(SchoolMapper::toFacultyDTO)
-                .toList();
+        Collection<Faculty> faculties = repository.findAll();
+        return toCollectionFacultyDTOs(faculties);
     }
 
     @Override
-    public Collection<FacultyDTO> getAllFacultiesWithColor(String color) {
-        return repository.findAllByColorContains(color)
-                .stream()
-                .map(SchoolMapper::toFacultyDTO)
-                .toList();
+    public Collection<FacultyDTO> getAllFacultiesWithNameOrColor(String searchTerm) {
+        Collection<Faculty> filteredByName = repository.findByNameContainsIgnoreCase(searchTerm);
+        Collection<Faculty> filteredByColor = repository.findByColorContainsIgnoreCase(searchTerm);
+        Collection<Faculty> foundFaculties = Stream
+                .concat(filteredByName.stream(), filteredByColor.stream())
+                .collect(Collectors.toSet());
+        return toCollectionFacultyDTOs(foundFaculties);
     }
 
     @Override
     public Optional<FacultyDTO> getFacultyById(long id) {
         return repository.findById(id)
-                .map(SchoolMapper::toFacultyDTO);
+                .map(FacultyMapper::toFacultyDTO);
+    }
+
+    @Override
+    public Collection<StudentDTO> getFacultyStudents(long id) {
+        Optional<Faculty> faculty = repository.findById(id);
+        if (faculty.isEmpty()) return null;
+        Collection<Student> facultyStudents = faculty.get().getStudents();
+        return toCollectionStudentDTOs(facultyStudents);
     }
 
     @Override

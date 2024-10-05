@@ -3,6 +3,7 @@ package ru.hogwarts.school.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.dto.FacultyDTO;
+import ru.hogwarts.school.dto.StudentDTO;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.Collection;
@@ -23,12 +24,12 @@ public class FacultyController {
     }
 
     @GetMapping
-    public ResponseEntity<Collection<FacultyDTO>> getAllFaculties(@RequestParam(required = false) String color) {
+    public ResponseEntity<Collection<FacultyDTO>> getAllFaculties(@RequestParam(required = false) String search_term) {
         Collection<FacultyDTO> faculties;
-        if (color == null) {
+        if (search_term == null) {
             faculties = service.getAllFaculties();
         } else {
-            faculties = service.getAllFacultiesWithColor(color);
+            faculties = service.getAllFacultiesWithNameOrColor(search_term);
         }
         if (faculties.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(faculties);
@@ -38,6 +39,12 @@ public class FacultyController {
     public ResponseEntity<FacultyDTO> getFacultyById(@PathVariable long id) {
         Optional<FacultyDTO> foundFaculty = service.getFacultyById(id);
         return foundFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/students")
+    public ResponseEntity<Collection<StudentDTO>> getFacultyStudents(@PathVariable long id) {
+        Collection<StudentDTO> facultyStudents = service.getFacultyStudents(id);
+        return facultyStudents == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(facultyStudents);
     }
 
     @PutMapping

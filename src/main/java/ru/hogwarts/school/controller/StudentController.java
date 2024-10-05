@@ -2,6 +2,7 @@ package ru.hogwarts.school.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
 import ru.hogwarts.school.service.StudentServiceImpl;
 
@@ -23,12 +24,12 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<Collection<StudentDTO>> getAllStudents(@RequestParam(required = false) Integer age) {
+    public ResponseEntity<Collection<StudentDTO>> getAllStudents(@RequestParam(required = false) Integer from, @RequestParam(required = false) Integer to) {
         Collection<StudentDTO> students;
-        if (age == null) {
+        if (from == null || to == null) {
             students = service.getAllStudents();
         } else {
-            students = service.findStudentsByAge(age);
+            students = service.findByAgeBetween(from, to);
         }
         if (students.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(students);
@@ -38,6 +39,12 @@ public class StudentController {
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable long id) {
         Optional<StudentDTO> foundStudent = service.getStudentById(id);
         return foundStudent.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/faculty")
+    public ResponseEntity<FacultyDTO> getStudentFaculty(@PathVariable long id) {
+        FacultyDTO studentFaculty = service.getStudentFaculty(id);
+        return studentFaculty == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(studentFaculty);
     }
 
     @PutMapping

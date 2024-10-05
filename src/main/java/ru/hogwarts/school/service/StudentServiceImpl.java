@@ -1,15 +1,18 @@
 package ru.hogwarts.school.service;
 
 import org.springframework.stereotype.Service;
+import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
-import ru.hogwarts.school.mapper.SchoolMapper;
+import ru.hogwarts.school.mapper.StudentMapper;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
 import java.util.Optional;
 
-import static ru.hogwarts.school.mapper.SchoolMapper.toStudentDTO;
+import static ru.hogwarts.school.mapper.FacultyMapper.toFacultyDTO;
+import static ru.hogwarts.school.mapper.StudentMapper.*;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -21,31 +24,35 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentDTO addStudent(StudentDTO studentDTO) {
-        Student student = new Student(studentDTO.getId(), studentDTO.getName(), studentDTO.getAge());
+        Student student = toStudent(studentDTO);
         repository.save(student);
         return studentDTO;
     }
 
     @Override
     public Collection<StudentDTO> getAllStudents() {
-        return repository.findAll()
-                .stream()
-                .map(SchoolMapper::toStudentDTO)
-                .toList();
+        Collection<Student> faculties = repository.findAll();
+        return toCollectionStudentDTOs(faculties);
     }
 
     @Override
-    public Collection<StudentDTO> findStudentsByAge(int age) {
-        return repository.findStudentsByAge(age)
-                .stream()
-                .map(SchoolMapper::toStudentDTO)
-                .toList();
+    public Collection<StudentDTO> findByAgeBetween(int from, int to) {
+        Collection<Student> faculties = repository.findByAgeBetween(from, to);
+        return toCollectionStudentDTOs(faculties);
     }
 
     @Override
     public Optional<StudentDTO> getStudentById(long id) {
         return repository.findById(id)
-                .map(SchoolMapper::toStudentDTO);
+                .map(StudentMapper::toStudentDTO);
+    }
+
+    @Override
+    public FacultyDTO getStudentFaculty(long id) {
+        Optional<Student> student = repository.findById(id);
+        if (student.isEmpty()) return null;
+        Faculty faculty = student.get().getFaculty();
+        return toFacultyDTO(faculty);
     }
 
     @Override
@@ -67,9 +74,8 @@ public class StudentServiceImpl implements StudentService {
         Optional<Student> student = repository.findById(id);
         if (student.isEmpty()) return null;
         Student deletedStudent = student.get();
-        StudentDTO deletedStudentDTO = toStudentDTO(deletedStudent);
-        repository.delete(deletedStudent);
-        return deletedStudentDTO;
+        repository.delete(student.get());
+        return toStudentDTO(deletedStudent);
     }
 
 
