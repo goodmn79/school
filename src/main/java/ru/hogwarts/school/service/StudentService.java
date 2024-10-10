@@ -4,22 +4,12 @@ import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
 
 import java.util.Collection;
-import java.util.Optional;
 
-public interface StudentService {
-
-    StudentDTO addStudent(StudentDTO studentDTO);
-
-    Collection<StudentDTO> getAllStudents();
-
+public interface StudentService extends SchoolService<StudentDTO> {
     Collection<StudentDTO> findByAgeBetween(int from, int to);
 
-    Optional<StudentDTO> getStudentById(long id);
+    Collection<StudentDTO> findByAge(int age);
 
     FacultyDTO getStudentFaculty(long id);
-
-    StudentDTO changeStudentData(StudentDTO studentDTO);
-
-    StudentDTO deleteStudentById(long id);
 
 }

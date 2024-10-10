@@ -3,86 +3,89 @@ package ru.hogwarts.school.service;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
+import ru.hogwarts.school.exception.FacultyNotFoundException;
 import ru.hogwarts.school.mapper.FacultyMapper;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.repository.StudentRepository;
+
+import static ru.hogwarts.school.mapper.FacultyMapper.*;
+import static ru.hogwarts.school.mapper.StudentMapper.mapToCollectionStudentDTOs;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ru.hogwarts.school.mapper.FacultyMapper.*;
-import static ru.hogwarts.school.mapper.StudentMapper.toCollectionStudentDTOs;
-
 @Service
 public class FacultyServiceImpl implements FacultyService {
-    private final FacultyRepository repository;
+    private final FacultyRepository facultyRepository;
+    private final StudentRepository studentRepository;
 
-    public FacultyServiceImpl(FacultyRepository repository) {
-        this.repository = repository;
+    public FacultyServiceImpl(FacultyRepository facultyRepository,
+                              StudentRepository studentRepository) {
+        this.facultyRepository = facultyRepository;
+        this.studentRepository = studentRepository;
     }
 
-    @Override
-    public FacultyDTO addFaculty(FacultyDTO facultyDTO) {
-        Faculty faculty = toFaculty(facultyDTO);
-        repository.save(faculty);
-        return facultyDTO;
-    }
 
     @Override
-    public Collection<FacultyDTO> getAllFaculties() {
-        Collection<Faculty> faculties = repository.findAll();
-        return toCollectionFacultyDTOs(faculties);
-    }
-
-    @Override
-    public Collection<FacultyDTO> getAllFacultiesWithNameOrColor(String searchTerm) {
-        Collection<Faculty> filteredByName = repository.findByNameContainsIgnoreCase(searchTerm);
-        Collection<Faculty> filteredByColor = repository.findByColorContainsIgnoreCase(searchTerm);
-        Collection<Faculty> foundFaculties = Stream
-                .concat(filteredByName.stream(), filteredByColor.stream())
+    public Collection<FacultyDTO> getAllFacultiesByNameOrColor(String searchTerm) {
+        Collection<Faculty> filteredByNameFaculty = facultyRepository.findByNameContainsIgnoreCase(searchTerm);
+        Collection<Faculty> filteredByColorFaculty = facultyRepository.findByColorContainsIgnoreCase(searchTerm);
+        Collection<Faculty> filteredFaculty = Stream.concat(
+                        filteredByNameFaculty.stream(),
+                        filteredByColorFaculty.stream())
                 .collect(Collectors.toSet());
-        return toCollectionFacultyDTOs(foundFaculties);
-    }
-
-    @Override
-    public Optional<FacultyDTO> getFacultyById(long id) {
-        return repository.findById(id)
-                .map(FacultyMapper::toFacultyDTO);
+        if (filteredFaculty.isEmpty()) throw new FacultyNotFoundException();
+        return mapToCollectionFacultyDTOs(filteredFaculty);
     }
 
     @Override
     public Collection<StudentDTO> getFacultyStudents(long id) {
-        Optional<Faculty> faculty = repository.findById(id);
-        if (faculty.isEmpty()) return null;
-        Collection<Student> facultyStudents = faculty.get().getStudents();
-        return toCollectionStudentDTOs(facultyStudents);
+        Collection<Student> facultyStudents = studentRepository.findAllByFacultyId(id);
+        return mapToCollectionStudentDTOs(facultyStudents);
     }
 
     @Override
-    public FacultyDTO changeFaculty(FacultyDTO facultyDTO) {
-        Optional<Faculty> faculty = repository.findById(facultyDTO.getId());
-        if (faculty.isEmpty()) return null;
-        faculty.map(f -> {
+    public FacultyDTO add(FacultyDTO facultyDTO) {
+        Faculty savedFaculty = facultyRepository.save(mapToFaculty(facultyDTO));
+        return mapToFacultyDTO(savedFaculty);
+    }
+
+    @Override
+    public Collection<FacultyDTO> getAll() {
+        Collection<Faculty> faculties = facultyRepository.findAll();
+        if (faculties.isEmpty()) throw new FacultyNotFoundException();
+        return mapToCollectionFacultyDTOs(faculties);
+    }
+
+    @Override
+    public FacultyDTO getById(long id) {
+        Optional<Faculty> foundFaculty = facultyRepository.findById(id);
+        if (foundFaculty.isEmpty()) throw new FacultyNotFoundException();
+        return foundFaculty.map(FacultyMapper::mapToFacultyDTO).orElseThrow(FacultyNotFoundException::new);
+    }
+
+    @Override
+    public FacultyDTO change(FacultyDTO facultyDTO) {
+        Optional<Faculty> changedFaculty = facultyRepository.findById(facultyDTO.getId());
+        if (changedFaculty.isEmpty()) throw new FacultyNotFoundException();
+        changedFaculty.map(f -> {
             f.setName(facultyDTO.getName());
             f.setColor(facultyDTO.getColor());
+            facultyRepository.save(f);
             return f;
         });
-        Faculty changedFaculty = faculty.get();
-        repository.save(changedFaculty);
-        return toFacultyDTO(changedFaculty);
+        return changedFaculty.map(FacultyMapper::mapToFacultyDTO).orElseThrow(FacultyNotFoundException::new);
     }
 
     @Override
-    public FacultyDTO deleteFacultyById(long id) {
-        Optional<Faculty> faculty = repository.findById(id);
-        if (faculty.isEmpty()) return null;
-        Faculty deletedFaculty = faculty.get();
-        FacultyDTO deletedFacultyDTO = toFacultyDTO(deletedFaculty);
-        repository.delete(deletedFaculty);
-        return deletedFacultyDTO;
+    public FacultyDTO deleteById(long id) {
+        Optional<Faculty> deletedFaculty = facultyRepository.findById(id);
+        if (deletedFaculty.isEmpty()) throw new FacultyNotFoundException();
+        facultyRepository.delete(deletedFaculty.get());
+        return deletedFaculty.map(FacultyMapper::mapToFacultyDTO).orElseThrow(FacultyNotFoundException::new);
     }
-
 }
