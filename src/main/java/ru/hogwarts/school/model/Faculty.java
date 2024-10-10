@@ -6,7 +6,6 @@ import lombok.Data;
 import java.util.Collection;
 
 @Entity
-@Table(name = "faculty")
 @Data
 public class Faculty {
     @Id

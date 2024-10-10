@@ -19,43 +19,43 @@ public class FacultyController {
     }
 
     @PostMapping
-    public ResponseEntity<FacultyDTO> createFaculty(@RequestBody FacultyDTO faculty) {
-        return ResponseEntity.ok(service.addFaculty(faculty));
+    public ResponseEntity<FacultyDTO> createFaculty(@RequestBody FacultyDTO facultyDTO) {
+        FacultyDTO createdFaculty = service.add(facultyDTO);
+        return ResponseEntity.ok(createdFaculty);
     }
 
     @GetMapping
     public ResponseEntity<Collection<FacultyDTO>> getAllFaculties(@RequestParam(required = false) String search_term) {
         Collection<FacultyDTO> faculties;
         if (search_term == null) {
-            faculties = service.getAllFaculties();
+            faculties = service.getAll();
         } else {
-            faculties = service.getAllFacultiesWithNameOrColor(search_term);
+            faculties = service.getAllFacultiesByNameOrColor(search_term);
         }
-        if (faculties.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(faculties);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FacultyDTO> getFacultyById(@PathVariable long id) {
-        Optional<FacultyDTO> foundFaculty = service.getFacultyById(id);
-        return foundFaculty.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        FacultyDTO foundFaculty = service.getById(id);
+        return ResponseEntity.ok(foundFaculty);
     }
 
     @GetMapping("/{id}/students")
     public ResponseEntity<Collection<StudentDTO>> getFacultyStudents(@PathVariable long id) {
         Collection<StudentDTO> facultyStudents = service.getFacultyStudents(id);
-        return facultyStudents == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(facultyStudents);
+        return ResponseEntity.ok(facultyStudents);
     }
 
     @PutMapping
     public ResponseEntity<FacultyDTO> changeFaculty(@RequestBody FacultyDTO facultyDTO) {
-        FacultyDTO changedFaculty = service.changeFaculty(facultyDTO);
-        return changedFaculty == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(changedFaculty);
+        FacultyDTO changedFaculty = service.change(facultyDTO);
+        return ResponseEntity.ok(changedFaculty);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<FacultyDTO> deleteFaculty(@PathVariable long id) {
-        FacultyDTO deletedFaculty = service.deleteFacultyById(id);
-        return deletedFaculty == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(deletedFaculty);
+        FacultyDTO deletedFaculty = service.deleteById(id);
+        return ResponseEntity.ok(deletedFaculty);
     }
 }

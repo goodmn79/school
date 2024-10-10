@@ -3,6 +3,7 @@ package ru.hogwarts.school.service;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.dto.FacultyDTO;
 import ru.hogwarts.school.dto.StudentDTO;
+import ru.hogwarts.school.exception.StudentNotFoundException;
 import ru.hogwarts.school.mapper.StudentMapper;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
@@ -11,7 +12,7 @@ import ru.hogwarts.school.repository.StudentRepository;
 import java.util.Collection;
 import java.util.Optional;
 
-import static ru.hogwarts.school.mapper.FacultyMapper.toFacultyDTO;
+import static ru.hogwarts.school.mapper.FacultyMapper.mapToFacultyDTO;
 import static ru.hogwarts.school.mapper.StudentMapper.*;
 
 @Service
@@ -23,60 +24,63 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public StudentDTO addStudent(StudentDTO studentDTO) {
-        Student student = toStudent(studentDTO);
-        repository.save(student);
-        return studentDTO;
-    }
-
-    @Override
-    public Collection<StudentDTO> getAllStudents() {
-        Collection<Student> faculties = repository.findAll();
-        return toCollectionStudentDTOs(faculties);
-    }
-
-    @Override
     public Collection<StudentDTO> findByAgeBetween(int from, int to) {
-        Collection<Student> faculties = repository.findByAgeBetween(from, to);
-        return toCollectionStudentDTOs(faculties);
+        Collection<Student> students = repository.findByAgeBetween(from, to);
+        if (students.isEmpty()) throw new StudentNotFoundException();
+        return mapToCollectionStudentDTOs(students);
     }
 
     @Override
-    public Optional<StudentDTO> getStudentById(long id) {
-        return repository.findById(id)
-                .map(StudentMapper::toStudentDTO);
+    public Collection<StudentDTO> findByAge(int age) {
+        Collection<Student> students = repository.findByAge(age);
+        if (students.isEmpty()) throw new StudentNotFoundException();
+        return mapToCollectionStudentDTOs(students);
     }
 
     @Override
     public FacultyDTO getStudentFaculty(long id) {
-        Optional<Student> student = repository.findById(id);
-        if (student.isEmpty()) return null;
-        Faculty faculty = student.get().getFaculty();
-        return toFacultyDTO(faculty);
+        Optional<Student> foundStudent = repository.findById(id);
+        Faculty faculty;
+        if (foundStudent.isEmpty()) throw new StudentNotFoundException();
+        faculty = foundStudent.get().getFaculty();
+        return mapToFacultyDTO(faculty);
     }
 
     @Override
-    public StudentDTO changeStudentData(StudentDTO studentDTO) {
-        Optional<Student> student = repository.findById(studentDTO.getId());
-        if (student.isEmpty()) return null;
-        student.map(s -> {
+    public StudentDTO add(StudentDTO studentDTO) {
+        Student addedStudent = repository.save(mapToStudent(studentDTO));
+        return mapToStudentDTO(addedStudent);
+    }
+
+    @Override
+    public Collection<StudentDTO> getAll() {
+        Collection<Student> students = repository.findAll();
+        if (students.isEmpty()) throw new StudentNotFoundException();
+        return mapToCollectionStudentDTOs(students);
+    }
+
+    @Override
+    public StudentDTO getById(long id) {
+        Optional<Student> foundStudent = repository.findById(id);
+        return foundStudent.map(StudentMapper::mapToStudentDTO).orElseThrow(StudentNotFoundException::new);
+    }
+
+    @Override
+    public StudentDTO change(StudentDTO studentDTO) {
+        Optional<Student> foundStudent = repository.findById(studentDTO.getId());
+        foundStudent.map(s -> {
             s.setName(studentDTO.getName());
             s.setAge(studentDTO.getAge());
+            repository.save(s);
             return s;
         });
-        Student changedStudent = student.get();
-        repository.save(changedStudent);
-        return toStudentDTO(changedStudent);
+        return mapToStudentDTO(foundStudent.orElseThrow(StudentNotFoundException::new));
     }
 
     @Override
-    public StudentDTO deleteStudentById(long id) {
-        Optional<Student> student = repository.findById(id);
-        if (student.isEmpty()) return null;
-        Student deletedStudent = student.get();
-        repository.delete(student.get());
-        return toStudentDTO(deletedStudent);
+    public StudentDTO deleteById(long id) {
+        Optional<Student> foundStudent = repository.findById(id);
+        foundStudent.ifPresent(repository::delete);
+        return mapToStudentDTO(foundStudent.orElseThrow(StudentNotFoundException::new));
     }
-
-
 }

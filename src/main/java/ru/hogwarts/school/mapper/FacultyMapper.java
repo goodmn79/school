@@ -21,21 +21,22 @@ public class FacultyMapper {
         });
     }
 
-    public static Faculty toFaculty(FacultyDTO facultyDTO) {
+    public static Faculty mapToFaculty(FacultyDTO facultyDTO) {
         return mapper.map(facultyDTO, Faculty.class);
     }
 
-    public static FacultyDTO toFacultyDTO(Faculty faculty) {
+    public static FacultyDTO mapToFacultyDTO(Faculty faculty) {
         return mapper.map(faculty, FacultyDTO.class);
     }
 
-    public static Collection<FacultyDTO> toCollectionFacultyDTOs(Collection<Faculty> faculties) {
+    public static Collection<FacultyDTO> mapToCollectionFacultyDTOs(Collection<Faculty> faculties) {
         Type collectionType = new TypeToken<Collection<FacultyDTO>>() {
         }.getType();
+
         return mapper.map(faculties, collectionType);
     }
 
-    public static Collection<Faculty> toCollectionFaculties(Collection<FacultyDTO> facultyDTOS) {
+    public static Collection<Faculty> mapToCollectionFaculties(Collection<FacultyDTO> facultyDTOS) {
         Type collectionType = new TypeToken<Collection<Faculty>>() {
         }.getType();
         return mapper.map(facultyDTOS, collectionType);

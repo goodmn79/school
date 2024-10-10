@@ -21,21 +21,22 @@ public class StudentMapper {
         });
     }
 
-    public static Student toStudent(StudentDTO studentDTO) {
+    public static Student mapToStudent(StudentDTO studentDTO) {
         return mapper.map(studentDTO, Student.class);
     }
 
-    public static StudentDTO toStudentDTO(Student student) {
+    public static StudentDTO mapToStudentDTO(Student student) {
         return mapper.map(student, StudentDTO.class);
     }
 
-    public static Collection<StudentDTO> toCollectionStudentDTOs(Collection<Student> students) {
+    public static Collection<StudentDTO> mapToCollectionStudentDTOs(Collection<Student> students) {
         Type collectionType = new TypeToken<Collection<StudentDTO>>() {
         }.getType();
+
         return mapper.map(students, collectionType);
     }
 
-    public static Collection<Student> toCollectionStudents(Collection<StudentDTO> studentDTOs) {
+    public static Collection<Student> mapToCollectionStudents(Collection<StudentDTO> studentDTOs) {
         Type collectionType = new TypeToken<Collection<Student>>() {
         }.getType();
         return mapper.map(studentDTOs, collectionType);
